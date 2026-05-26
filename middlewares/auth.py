@@ -6,10 +6,11 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 security = HTTPBearer(auto_error=False)
 
-#JWT_SECRET = os.environ.get("JWT_SECRET") or os.environ.get("SECRET_KEY")  # Permite `JWT_SECRET` ou `SECRET_KEY`
-#JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM") or os.environ.get("ALGORITHM", "HS256")  # Permite `JWT_ALGORITHM` ou `ALGORITHM`
-JWT_SECRET = "sua_chave_secreta_super_segura_aqui"
-JWT_ALGORITHM = "HS256"
+from dotenv import load_dotenv
+load_dotenv()
+
+JWT_SECRET = os.environ.get("JWT_SECRET") or os.environ.get("SECRET_KEY")
+JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM") or os.environ.get("ALGORITHM", "HS256")
 
 async def verify_token_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Dict[str, str]:
     if not credentials or not credentials.credentials:

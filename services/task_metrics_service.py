@@ -10,9 +10,9 @@ class TaskMetricsService:
 
     async def get_tasks_by_status(self, user_id: str, role: str):
 
-        match_filter = {'is_deleted': False}
+        match_filter = {'isDeleted': False}
         if role == 'user':
-            match_filter['user_id'] = ObjectId(user_id)
+            match_filter['userId'] = ObjectId(user_id)
         
         dynamic_pipeline = [{
             '$match': match_filter
@@ -56,9 +56,13 @@ class TaskMetricsService:
         }
     
 
-    async def get_tasks_by_priority(self):
-        # Implementação similar para métricas por prioridade
-        result = await self.repository.aggregate(priority_pipeline) # Substitua pelo pipeline correto para prioridade
+    async def get_tasks_by_priority(self, user_id: str, role: str):
+        match_filter = {'isDeleted': False}
+        if role == 'user':
+            match_filter['userId'] = ObjectId(user_id)
+
+        dynamic_pipeline = [{'$match': match_filter}, priority_pipeline[1], priority_pipeline[2]]
+        result = await self.repository.aggregate(dynamic_pipeline)
         # Formate o resultado de maneira similar ao método anterior
         total_tasks = 0
         response= {
