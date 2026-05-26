@@ -1,0 +1,20 @@
+pipeline =[
+    {
+    '$match':{
+        'isDeleted':False
+    }
+    },
+    {
+    '$group':{
+        '_id':'$status',
+        'count':{'$sum':1}
+    }
+    },
+    {
+    '$project':{
+        'status':'$_id',
+        'count':1,
+        '_id':0
+    }
+    }
+]

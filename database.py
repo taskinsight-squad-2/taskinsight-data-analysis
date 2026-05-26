@@ -6,9 +6,9 @@ load_dotenv()
 
 MONGODB_URL = os.getenv("MONGODB_URL")
 client = AsyncIOMotorClient(MONGODB_URL)
-db = client["task_insight_db"]
+db = client["TaskInsight"]
 
-#Função auxiliar para obter a coleção de métricas
+# Função auxiliar para obter a coleção de tarefas
 
-async def get_analytics_collection():
-    return db["analytics"]
+async def get_tasks_collection():
+    return db["tasks"]
