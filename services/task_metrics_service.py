@@ -1,13 +1,28 @@
+from bson import ObjectId # Blibioteca para manipulação de ObjectId do MongoDB
+from fastapi import APIRouter, HTTPException, Depends
 from repositories.task_metrics_repository import TaskMetricsRepository
-from pipelines.tasks_by_status_pipeline import pipeline
+from pipelines.tasks_by_status_pipeline import pipeline as status_pipeline
+from pipelines.tasks_by_priority_pipeline import pipeline as priority_pipeline
 
 class TaskMetricsService:
     def __init__(self):
         self.repository = TaskMetricsRepository()
 
-    async def get_tasks_by_status(self):
+    async def get_tasks_by_status(self, user_id: str, role: str):
+
+        match_filter = {'is_deleted': False}
+        if role == 'user':
+            match_filter['user_id'] = ObjectId(user_id)
+        
+        dynamic_pipeline = [{
+            '$match': match_filter
+        },
+        status_pipeline[1],
+        status_pipeline[2]
+        ]
+          
         # 1. Armazena o resultado da agregação na variável 'result'
-        result = await self.repository.aggregate(pipeline)
+        result = await self.repository.aggregate(dynamic_pipeline)
         
         # 2. Mantém a lógica de formatação dentro do escopo da função
         response = {
@@ -39,5 +54,35 @@ class TaskMetricsService:
             'total_tasks': total_tasks,
             'by_status': response
         }
-
     
+
+    async def get_tasks_by_priority(self):
+        # Implementação similar para métricas por prioridade
+        result = await self.repository.aggregate(priority_pipeline) # Substitua pelo pipeline correto para prioridade
+        # Formate o resultado de maneira similar ao método anterior
+        total_tasks = 0
+        response= {
+            'LOW': {'count': 0, 'percent': 0.0},
+            'MEDIUM': {'count': 0, 'percent': 0.0},
+            'HIGH': {'count': 0, 'percent': 0.0}
+        }
+
+        for item in result:
+            priority = item.get('priority')
+            count = item.get('count', 0)
+            if priority in response:
+                response[priority]['count'] = count
+            else:
+                # suporta prioridades inesperadas
+                response[priority] = {'count': count, 'percent': 0.0}
+            total_tasks += count
+
+        # Calcular os percentuais
+        if total_tasks > 0:
+            for priority, stats in response.items():
+                stats['percent'] = round((stats['count'] / total_tasks) * 100, 2)
+
+        return {
+            'total_tasks': total_tasks,
+            'by_priority': response
+        }

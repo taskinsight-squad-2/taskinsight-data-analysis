@@ -7,6 +7,7 @@ class StatusItemMetrics(BaseModel):
 
 class TaskMetricsByStatusResponse(BaseModel):
     """Contrato final que mapeia a distribuição de todos os status."""
+    total_tasks: int = Field(..., description="Total de tarefas considerado no cálculo dos percentuais")
     PENDING: StatusItemMetrics
     IN_PROGRESS: StatusItemMetrics
     DONE: StatusItemMetrics
