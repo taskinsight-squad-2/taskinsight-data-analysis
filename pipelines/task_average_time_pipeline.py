@@ -2,6 +2,7 @@ pipeline = [
     {
         '$match': {
             'isDeleted': False,
+            'status': 'DONE',
             'completedAt': { '$exists': True, '$ne': None },
             'startedAt': { '$exists': True, '$ne': None }
         }

@@ -3,11 +3,13 @@ from fastapi import APIRouter, HTTPException, Depends
 from repositories.task_metrics_repository import TaskMetricsRepository
 from pipelines.tasks_by_status_pipeline import pipeline as status_pipeline
 from pipelines.tasks_by_priority_pipeline import pipeline as priority_pipeline
+from pipelines.task_average_time_pipeline import pipeline as average_time_pipeline
+
 
 class TaskMetricsService:
     def __init__(self):
         self.repository = TaskMetricsRepository()
-
+# Analise de status das tarefas
     async def get_tasks_by_status(self, user_id: str, role: str):
 
         match_filter = {'isDeleted': False}
@@ -55,7 +57,7 @@ class TaskMetricsService:
             'by_status': response
         }
     
-
+# Analise de prioridade das tarefas
     async def get_tasks_by_priority(self, user_id: str, role: str):
         match_filter = {'isDeleted': False}
         if role == 'user':
@@ -89,4 +91,27 @@ class TaskMetricsService:
         return {
             'total_tasks': total_tasks,
             'by_priority': response
+        }
+
+ # Analise do tempo médio para conclusão das tarefas   
+    async def get_average_time_to_complete_tasks(self, user_id: str, role: str):
+        import copy
+        dynamic_pipeline = copy.deepcopy(average_time_pipeline)
+        if role == 'user':
+            dynamic_pipeline[0]['$match']['userId'] = ObjectId(user_id)
+        result = await self.repository.aggregate(dynamic_pipeline)
+        
+        if not result:
+            return {
+                'average_time_seconds': 0.0,
+                'average_time_hours': 0.0,
+                'average_time_days': 0.0
+            }
+        
+        average_hours = result[0].get('averageHours', 0.0) or 0.0
+        average_days = result[0].get('averageDays', 0.0) or 0.0
+        return {
+            'average_time_seconds': round(average_hours * 3600, 2),
+            'average_time_hours': round(average_hours, 2),
+            'average_time_days': round(average_days, 2)
         }
