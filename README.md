@@ -150,15 +150,53 @@ Retorna o tempo médio para conclusão de tarefas com status `DONE` que possuem 
 
 ---
 
+### GET `/task/metrics/throughput`
+
+Retorna a quantidade de tarefas concluídas agrupadas por dia, ordenadas por data.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    { "day": "2026-05-25", "count": 3 },
+    { "day": "2026-05-26", "count": 2 }
+  ]
+}
+```
+
+---
+
+### GET `/task/metrics/backlog`
+
+Retorna a diferença entre tarefas criadas e finalizadas por dia, calculada com pandas.
+
+> Considera apenas tarefas finalizadas (`DONE`) no mesmo dia em que foram criadas para o cálculo de `finalizadas`.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    { "date": "2026-05-25", "criadas": 3, "finalizadas": 1, "backlog": 2 },
+    { "date": "2026-05-26", "criadas": 2, "finalizadas": 2, "backlog": 0 }
+  ]
+}
+```
+
+---
+
 ## Estrutura do Projeto
 
 ```
 ├── middlewares/
-│   └── auth.py               # Validação JWT
+│   └── auth.py                          # Validação JWT
 ├── pipelines/
 │   ├── tasks_by_status_pipeline.py
 │   ├── tasks_by_priority_pipeline.py
-│   └── task_average_time_pipeline.py
+│   ├── task_average_time_pipeline.py
+│   ├── tasks_throughput_pipeline.py
+│   └── task_backlog_pipeline.py
 ├── repositories/
 │   └── task_metrics_repository.py
 ├── routes/
@@ -208,12 +246,11 @@ async function fetchMetrics<T>(endpoint: string, token: string): Promise<T> {
 }
 
 export const analyticsApi = {
-  getByStatus: (token: string) =>
-    fetchMetrics('/task/metrics/by-status', token),
-  getByPriority: (token: string) =>
-    fetchMetrics('/task/metrics/by-priority', token),
-  getAverageTime: (token: string) =>
-    fetchMetrics('/task/metrics/average-time', token),
+  getByStatus:    (token: string) => fetchMetrics('/task/metrics/by-status', token),
+  getByPriority:  (token: string) => fetchMetrics('/task/metrics/by-priority', token),
+  getAverageTime: (token: string) => fetchMetrics('/task/metrics/average-time', token),
+  getThroughput:  (token: string) => fetchMetrics('/task/metrics/throughput', token),
+  getBacklog:     (token: string) => fetchMetrics('/task/metrics/backlog', token),
 };
 ```
 
@@ -250,13 +287,26 @@ export interface MetricsByPriorityResponse {
   };
 }
 
-export interface AverageTimeResponse {
+export interface ThroughputItem {
+  day: string;
+  count: number;
+}
+
+export interface ThroughputResponse {
   success: boolean;
-  data: {
-    average_time_seconds: number;
-    average_time_hours: number;
-    average_time_days: number;
-  };
+  data: ThroughputItem[];
+}
+
+export interface BacklogItem {
+  date: string;
+  criadas: number;
+  finalizadas: number;
+  backlog: number;
+}
+
+export interface BacklogResponse {
+  success: boolean;
+  data: BacklogItem[];
 }
 ```
 

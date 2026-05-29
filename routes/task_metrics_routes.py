@@ -87,3 +87,33 @@ async def get_average_time_to_complete_tasks(current_user_id: dict = Depends(ver
             average_time_days=data['average_time_days']
         )
     )
+
+# Rota para obter a taxa de conclusão de tarefas (throughput)
+@router.get("/task/metrics/throughput",
+            summary="Obter taxa de conclusão de tarefas",
+            description="Retorna a quantidade de tarefas concluídas em um determinado período.")
+async def get_tasks_throughput(current_user_id: dict = Depends(verify_token_user)):
+    data = await service.get_tasks_throughput(
+        user_id=current_user_id["user_id"],
+        role=current_user_id["role"]
+    )
+
+    return {
+        "success": True,
+        "data": data
+    }
+
+# Rota para obter o backlog de tarefas (criadas vs finalizadas por dia)
+@router.get("/task/metrics/backlog",
+            summary="Obter backlog de tarefas",
+            description="Retorna a diferença entre tarefas criadas e finalizadas por dia.")
+async def get_tasks_backlog(current_user_id: dict = Depends(verify_token_user)):
+    data = await service.get_tasks_backlog(
+        user_id=current_user_id["user_id"],
+        role=current_user_id["role"]
+    )
+
+    return {
+        "success": True,
+        "data": data
+    }

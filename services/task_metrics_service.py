@@ -1,10 +1,13 @@
-from bson import ObjectId # Blibioteca para manipulação de ObjectId do MongoDB
+from bson import ObjectId
 from fastapi import APIRouter, HTTPException, Depends
 from repositories.task_metrics_repository import TaskMetricsRepository
 from pipelines.tasks_by_status_pipeline import pipeline as status_pipeline
 from pipelines.tasks_by_priority_pipeline import pipeline as priority_pipeline
 from pipelines.task_average_time_pipeline import pipeline as average_time_pipeline
-
+from pipelines.tasks_throughput_pipeline import pipeline as throughput_pipeline
+from pipelines.task_backlog_pipeline import pipeline as backlog_pipeline
+import copy
+import pandas as pd
 
 class TaskMetricsService:
     def __init__(self):
@@ -115,3 +118,40 @@ class TaskMetricsService:
             'average_time_hours': round(average_hours, 2),
             'average_time_days': round(average_days, 2)
         }
+
+# Analise do throughput (taxa de conclusão) de tarefas
+    async def get_tasks_throughput(self, user_id: str, role: str):
+        
+        dynamic_pipeline = copy.deepcopy(throughput_pipeline)
+        if role == 'user':
+            dynamic_pipeline[0]['$match']['userId'] = ObjectId(user_id)
+        result = await self.repository.aggregate(dynamic_pipeline)
+        
+        df = pd.DataFrame(result)
+
+        if df.empty:
+            return []
+        
+        df.rename(columns={'_id': 'date'}, inplace=True)
+        return df.to_dict(orient='records')
+
+# Analise do backlog de tarefas (criadas vs finalizadas por dia)
+    async def get_tasks_backlog(self, user_id: str, role: str):
+        dynamic_pipeline = copy.deepcopy(backlog_pipeline)
+        if role == 'user':
+            dynamic_pipeline[0]['$match']['userId'] = ObjectId(user_id)
+        result = await self.repository.aggregate(dynamic_pipeline)
+
+        criadas     = pd.DataFrame(result[0].get('criadas', [])).rename(columns={'_id': 'date', 'count': 'criadas'})
+        finalizadas = pd.DataFrame(result[0].get('finalizadas', [])).rename(columns={'_id': 'date', 'count': 'finalizadas'})
+
+        if criadas.empty and finalizadas.empty:
+            return []
+
+        df = pd.merge(criadas, finalizadas, on='date', how='outer').fillna(0)
+        df['criadas']     = df['criadas'].astype(int)
+        df['finalizadas'] = df['finalizadas'].astype(int)
+        df['backlog']     = df['criadas'] - df['finalizadas']
+        df = df.sort_values('date')
+
+        return df.to_dict(orient='records')
