@@ -3,6 +3,7 @@ from services.task_metrics_service import TaskMetricsService
 from schemas.task_metrics_schemas import TaskMetricsByStatusResponse
 from schemas.task_priority_schemas import TaskMetricsByPriorityResponse
 from schemas.task_average_time_schemas import TaskAverageTimeResponse, StandardAverageTimeResponse
+from schemas.task_response_time_schemas import ResponseTimeMetrics 
 from pydantic import BaseModel, Field
 from middlewares.auth import verify_token_user
 from fastapi import Depends
@@ -117,3 +118,20 @@ async def get_tasks_backlog(current_user_id: dict = Depends(verify_token_user)):
         "success": True,
         "data": data
     }
+
+# Rota para obter o tempo de resposta das tarefas (dentro ou fora do SLA)
+@router.get("/task/metrics/response-time",
+            #response_model=ResponseTimeMetrics,
+            summary="Obter tempo de resposta das tarefas",
+            description="Retorna o percentual de tarefas concluídas dentro do SLA (até 3 horas).")
+async def get_tasks_response_time(current_user_id: dict = Depends(verify_token_user)):
+    data = await service.get_tasks_response_time(
+        user_id=current_user_id["user_id"],
+        role=current_user_id["role"]
+    )
+
+    return {
+        "success": True,
+        "data": data
+    }
+    
