@@ -186,6 +186,28 @@ Retorna a diferença entre tarefas criadas e finalizadas por dia, calculada com 
 
 ---
 
+### GET `/task/metrics/response-time`
+
+Retorna o percentual de tarefas atendidas dentro do SLA (até 3 horas) agrupadas por dia.
+
+- Se `startedAt` estiver preenchido, calcula o tempo entre `createdAt` e `startedAt`
+- Se `startedAt` for `null`, usa o tempo atual como referência
+- SLA considerado cumprido quando o tempo de resposta é ≤ 3 horas
+- `target` fixo de 90% indica a meta de SLA esperada
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    { "date": "2026-05-25", "slaPercentage": 85.0, "target": 90 },
+    { "date": "2026-05-26", "slaPercentage": 100.0, "target": 90 }
+  ]
+}
+```
+
+---
+
 ## Estrutura do Projeto
 
 ```
@@ -196,7 +218,8 @@ Retorna a diferença entre tarefas criadas e finalizadas por dia, calculada com 
 │   ├── tasks_by_priority_pipeline.py
 │   ├── task_average_time_pipeline.py
 │   ├── tasks_throughput_pipeline.py
-│   └── task_backlog_pipeline.py
+│   ├── task_backlog_pipeline.py
+│   └── task_response_time_pipeline.py
 ├── repositories/
 │   └── task_metrics_repository.py
 ├── routes/
@@ -204,7 +227,8 @@ Retorna a diferença entre tarefas criadas e finalizadas por dia, calculada com 
 ├── schemas/
 │   ├── task_metrics_schemas.py
 │   ├── task_priority_schemas.py
-│   └── task_average_time_schemas.py
+│   ├── task_average_time_schemas.py
+│   └── task_response_time_schemas.py
 ├── services/
 │   └── task_metrics_service.py
 ├── database.py
@@ -251,6 +275,7 @@ export const analyticsApi = {
   getAverageTime: (token: string) => fetchMetrics('/task/metrics/average-time', token),
   getThroughput:  (token: string) => fetchMetrics('/task/metrics/throughput', token),
   getBacklog:     (token: string) => fetchMetrics('/task/metrics/backlog', token),
+  getResponseTime:(token: string) => fetchMetrics('/task/metrics/response-time', token),
 };
 ```
 
@@ -307,6 +332,17 @@ export interface BacklogItem {
 export interface BacklogResponse {
   success: boolean;
   data: BacklogItem[];
+}
+
+export interface ResponseTimeItem {
+  date: string;
+  slaPercentage: number;
+  target: number;
+}
+
+export interface ResponseTimeResponse {
+  success: boolean;
+  data: ResponseTimeItem[];
 }
 ```
 
