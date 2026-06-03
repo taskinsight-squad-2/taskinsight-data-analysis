@@ -12,6 +12,7 @@ API de análise de dados e métricas do TaskInsight, responsável por processar 
 - [Motor](https://motor.readthedocs.io/) (MongoDB async)
 - [Python 3.11+](https://www.python.org/)
 - [PyJWT](https://pyjwt.readthedocs.io/)
+- [Pandas](https://pandas.pydata.org/)
 - [MongoDB Atlas](https://www.mongodb.com/atlas)
 
 ---
@@ -228,6 +229,7 @@ Retorna o percentual de tarefas atendidas dentro do SLA (até 3 horas) agrupadas
 │   ├── task_metrics_schemas.py
 │   ├── task_priority_schemas.py
 │   ├── task_average_time_schemas.py
+│   ├── task_throughput_schemas.py
 │   └── task_response_time_schemas.py
 ├── services/
 │   └── task_metrics_service.py
