@@ -346,6 +346,17 @@ export interface ResponseTimeResponse {
   success: boolean;
   data: ResponseTimeItem[];
 }
+
+export interface ResolutionTimeItem {
+  date: string;
+  onTimeSolution: number;
+  target: number;
+}
+
+export interface ResolutionTimeResponse {
+  success: boolean;
+  data: ResolutionTimeItem[];
+}
 ```
 
 ---

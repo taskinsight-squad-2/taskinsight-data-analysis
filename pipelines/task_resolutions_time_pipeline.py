@@ -56,7 +56,7 @@ pipeline = [
 
             "date": "$_id",
 
-            "onTimeResolutions": {
+            "onTimeSolution": {
 
                 "$round": [
 
