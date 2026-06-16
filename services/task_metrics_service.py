@@ -9,6 +9,7 @@ from pipelines.task_backlog_pipeline import pipeline as backlog_pipeline
 from pipelines.task_response_time_pipeline import pipeline as response_time_pipeline
 from pipelines.task_resolutions_time_pipeline import pipeline as resolutions_time_pipeline
 from pipelines.task_response_time_mes_pipeline import pipeline as response_time_mes_pipeline
+from pipelines.task_resolutions_time_mes_pipeline import pipeline as resolutions_time_mes_pipeline
 import copy
 import pandas as pd
 
@@ -168,7 +169,7 @@ class TaskMetricsService:
         
         if not result:
             return []
-        print("Resultado da agregação de tempo de resposta:", result)
+       # print("Resultado da agregação de tempo de resposta:", result)
         return result
 
 # Analise do percentual de tarefas resolvidas dentro do prazo (SLA de 90%)
@@ -191,5 +192,17 @@ class TaskMetricsService:
 
         if not result:
             return []
-        print("Resultado da agregação de tempo de resposta por mês:", result)
+        #print("Resultado da agregação de tempo de resposta por mês:", result)
+        return result
+
+# Analise do tempo de solução no prazo  por mês
+    async def get_tasks_resolution_time_mes(self, user_id: str, role: str):
+        dynamic_pipeline = copy.deepcopy(resolutions_time_mes_pipeline)
+        if role == 'user':
+            dynamic_pipeline[0]['$match']['userId'] = ObjectId(user_id)
+        result = await self.repository.aggregate(dynamic_pipeline)
+
+        if not result:
+            return []
+        #print("Resultado da agregação de tempo de solução no prazo por mês:", result)
         return result
