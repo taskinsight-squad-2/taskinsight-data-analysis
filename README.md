@@ -461,3 +461,5 @@ export const config = {
 - O token JWT deve ser armazenado em cookie `httpOnly` para maior segurança, evitando acesso via JavaScript
 - Em produção, substitua `http://127.0.0.1:8000` pela URL real da API no `.env.local`
 - Utilize `cache: 'no-store'` nas requisições de métricas para garantir dados sempre atualizados
+- Foi incluido um endpoint de backlog calculado com pandas para demonstrar a flexibilidade da API em fornecer métricas customizadas
+- O endpoint de tempo de resposta considera tarefas sem `startedAt` como pendentes, usando o tempo atual para cálculo, o que pode impactar a métrica se houver muitas tarefas não iniciadas
