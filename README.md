@@ -12,6 +12,7 @@ API de análise de dados e métricas do TaskInsight, responsável por processar 
 - [Motor](https://motor.readthedocs.io/) (MongoDB async)
 - [Python 3.11+](https://www.python.org/)
 - [PyJWT](https://pyjwt.readthedocs.io/)
+- [Pandas](https://pandas.pydata.org/)
 - [MongoDB Atlas](https://www.mongodb.com/atlas)
 
 ---
@@ -228,6 +229,7 @@ Retorna o percentual de tarefas atendidas dentro do SLA (até 3 horas) agrupadas
 │   ├── task_metrics_schemas.py
 │   ├── task_priority_schemas.py
 │   ├── task_average_time_schemas.py
+│   ├── task_throughput_schemas.py
 │   └── task_response_time_schemas.py
 ├── services/
 │   └── task_metrics_service.py
@@ -344,6 +346,17 @@ export interface ResponseTimeResponse {
   success: boolean;
   data: ResponseTimeItem[];
 }
+
+export interface ResolutionTimeItem {
+  date: string;
+  onTimeSolution: number;
+  target: number;
+}
+
+export interface ResolutionTimeResponse {
+  success: boolean;
+  data: ResolutionTimeItem[];
+}
 ```
 
 ---
@@ -448,3 +461,5 @@ export const config = {
 - O token JWT deve ser armazenado em cookie `httpOnly` para maior segurança, evitando acesso via JavaScript
 - Em produção, substitua `http://127.0.0.1:8000` pela URL real da API no `.env.local`
 - Utilize `cache: 'no-store'` nas requisições de métricas para garantir dados sempre atualizados
+- Foi incluido um endpoint de backlog calculado com pandas para demonstrar a flexibilidade da API em fornecer métricas customizadas
+- O endpoint de tempo de resposta considera tarefas sem `startedAt` como pendentes, usando o tempo atual para cálculo, o que pode impactar a métrica se houver muitas tarefas não iniciadas

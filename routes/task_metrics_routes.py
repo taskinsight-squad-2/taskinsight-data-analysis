@@ -1,13 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from services.task_metrics_service import TaskMetricsService
 from schemas.task_metrics_schemas import TaskMetricsByStatusResponse
 from schemas.task_priority_schemas import TaskMetricsByPriorityResponse
 from schemas.task_average_time_schemas import TaskAverageTimeResponse, StandardAverageTimeResponse
 from schemas.task_response_time_schemas import ResponseTimeMetrics, StandardResponseTimeResponse
 from schemas.task_resolutions_time_schemas import ResolutionTimeMetrics, StandardResolutionTimeResponse
+from schemas.task_response_time_mes_schimas import StandardResponseTimeMesResponse
 from pydantic import BaseModel, Field
 from middlewares.auth import verify_token_user
-from fastapi import Depends
 
 
 router = APIRouter()
@@ -136,7 +136,7 @@ async def get_tasks_response_time(current_user_id: dict = Depends(verify_token_u
         "data": data
     }
 
- # Rota para obter o percentual de tarefas resolvidas dentro do prazo (SLA de 90%)
+# Rota para obter o percentual de tarefas resolvidas dentro do prazo (SLA de 90%)
 @router.get("/task/metrics/resolution-time",
             response_model=StandardResolutionTimeResponse,
             summary="Obter percentual de tarefas resolvidas dentro do prazo",
@@ -150,4 +150,20 @@ async def get_tasks_resolution_time(current_user_id: dict = Depends(verify_token
     return {
         "success": True,
         "data": data
-    }   
+    }
+
+# Rota para obter o tempo de resposta das tarefas por mês
+@router.get("/task/metrics/response-time-mes",
+            response_model=StandardResponseTimeMesResponse,
+            summary="Obter tempo de resposta das tarefas por mês",
+            description="Retorna o percentual de tarefas concluídas dentro do SLA (até 3 horas) agrupadas por mês.")
+async def get_tasks_response_time_mes(current_user_id: dict = Depends(verify_token_user)):
+    data = await service.get_tasks_response_time_mes(
+        user_id=current_user_id["user_id"],
+        role=current_user_id["role"]
+    )
+
+    return {
+        "success": True,
+        "data": data
+    }
