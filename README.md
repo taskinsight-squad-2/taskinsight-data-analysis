@@ -12,6 +12,7 @@ API de análise de dados e métricas do TaskInsight, responsável por processar 
 - [Motor](https://motor.readthedocs.io/) (MongoDB async)
 - [Python 3.11+](https://www.python.org/)
 - [PyJWT](https://pyjwt.readthedocs.io/)
+- [Scikit-learn](https://scikit-learn.org/) (Machine Learning)
 - [Pandas](https://pandas.pydata.org/)
 - [MongoDB Atlas](https://www.mongodb.com/atlas)
 
@@ -204,6 +205,29 @@ Retorna o percentual de tarefas atendidas dentro do SLA (até 3 horas) agrupadas
     { "date": "2026-05-25", "slaPercentage": 85.0, "target": 90 },
     { "date": "2026-05-26", "slaPercentage": 100.0, "target": 90 }
   ]
+}
+```
+
+---
+
+### GET `/task/predictions/throughput`
+
+Retorna a **previsão** de tarefas concluídas para os próximos 7 dias utilizando Regressão Linear.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "forecast": [
+      { "day": "2026-06-18", "count": 5 },
+      { "day": "2026-06-19", "count": 6 }
+    ],
+    "metadata": {
+      "average": 4.5,
+      "daysAnalysed": 15
+    }
+  }
 }
 ```
 

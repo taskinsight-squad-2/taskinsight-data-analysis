@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from database import client
 from routes.task_metrics_routes import router as tasks_metrics_router
+from routes.task_predictions_routers import router as tasks_predictions_router
 
 
 
@@ -82,4 +83,7 @@ async def health_check():
 
 app.include_router(
     tasks_metrics_router
+)
+app.include_router(
+    tasks_predictions_router
 )
