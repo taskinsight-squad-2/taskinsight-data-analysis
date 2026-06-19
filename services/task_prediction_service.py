@@ -1,5 +1,5 @@
 # services/task_prediction_service.py
-
+import pandas as pd
 from datetime import datetime
 from datetime import timedelta
 import copy
@@ -58,10 +58,15 @@ class PredictionService:
             return {
                 "forecast": [],
                 "metadata": {
-                    "average": 0,
+                    "average": 0.0,
                     "daysAnalysed": 0
                 }
             }
+        # Evitar envio de valores nulos
+
+        for item in data:
+            if item.get("avg_execution_hours") is None:
+                item["avg_execution_hours"] = 0.0
 
         # Média histórica
         historical_average = round(
@@ -84,19 +89,20 @@ class PredictionService:
             "%Y-%m-%d"
         )
 
+        # Gerar uma lista com os próximos 7 dias úteis reais
+        proximos_dias_uteis = pd.bdate_range(start= last_date + timedelta(days=1), periods=7)
+
         forecast = []
 
         for i, prediction in enumerate(
             predictions
         ):
+            
 
             # Garante que prediction seja tratado como float caso ainda venha em estrutura aninhada
             val = prediction[0] if isinstance(prediction, list) else prediction
 
-            future_date = (
-                last_date +
-                timedelta(days=i + 1)
-            )
+            future_date = proximos_dias_uteis[i]
 
             forecast.append({
 

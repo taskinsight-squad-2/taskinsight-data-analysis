@@ -50,4 +50,4 @@ websockets==16.0
 pandas
 numpy
 scikit-learn
-
+prophet
